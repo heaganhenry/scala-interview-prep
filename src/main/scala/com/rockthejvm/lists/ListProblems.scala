@@ -11,6 +11,9 @@ sealed abstract class RList[+T] {
 
   // get element at kth index
   def apply(index: Int): T
+
+  // get the size of the list
+  def length: Int
 }
 
 case object RNil extends RList[Nothing] {
@@ -21,6 +24,9 @@ case object RNil extends RList[Nothing] {
 
   // get element at kth index
   override def apply(index: Int): Nothing = throw new NoSuchElementException
+
+  // get the size of the list
+  override def length: Int = 0
 }
 
 case class ::[+T](override val head: T, override val tail: RList[T]) extends RList[T] {
@@ -43,8 +49,7 @@ case class ::[+T](override val head: T, override val tail: RList[T]) extends RLi
     = applyTailrec([3,4,5], 2)
     = 3
 
-    Complexity of this algorithm
-    O(min(N, index))
+    Complexity: O(min(N, index))
     */
     @tailrec
     def applyTailrec(remList: RList[T], curIndex: Int = 0): T =
@@ -54,12 +59,38 @@ case class ::[+T](override val head: T, override val tail: RList[T]) extends RLi
     if (index < 1) throw new NoSuchElementException
     else applyTailrec(this)
   }
+
+  // get the size of the list
+  override def length: Int = {
+    /*
+    [1,2,3,4,5].length = lengthTailrec([1,2,3,4,5], 0)
+    = lengthTailrec([2,3,4,5], 1)
+    = lengthTailrec([3,4,5], 2)
+    = lengthTailrec([4,5], 3)
+    = lengthTailrec([5], 4)
+    = lengthTailrec([], 5)
+    = 5
+
+    Complexity: O(N)
+    */
+    @tailrec
+    def lengthTailrec(remList: RList[T], count: Int = 0): Int =
+      if (remList.isEmpty) count
+      else lengthTailrec(remList.tail, count + 1)
+
+    lengthTailrec(this)
+  }
 }
 
 object ListProblems {
 
   def main(args: Array[String]): Unit = {
     val aSmallList = 1 :: 2 :: 3 :: RNil // RNil.::(3).::(2).::(1)
+
+    // test get-kth
     println(aSmallList(2))
+
+    // test length
+    println(aSmallList.length)
   }
 }
