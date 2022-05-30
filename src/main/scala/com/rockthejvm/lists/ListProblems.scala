@@ -14,6 +14,9 @@ sealed abstract class RList[+T] {
 
   // get the size of the list
   def length: Int
+
+  // reverse the list
+  def reverse: RList[T]
 }
 
 case object RNil extends RList[Nothing] {
@@ -27,6 +30,9 @@ case object RNil extends RList[Nothing] {
 
   // get the size of the list
   override def length: Int = 0
+
+  // reverse the list
+  override def reverse: RList[Nothing] = this
 }
 
 case class ::[+T](override val head: T, override val tail: RList[T]) extends RList[T] {
@@ -56,7 +62,7 @@ case class ::[+T](override val head: T, override val tail: RList[T]) extends RLi
       if (index == curIndex) remList.head
       else applyTailrec(remList.tail, curIndex + 1)
 
-    if (index < 1) throw new NoSuchElementException
+    if (index < 0) throw new NoSuchElementException
     else applyTailrec(this)
   }
 
@@ -80,6 +86,27 @@ case class ::[+T](override val head: T, override val tail: RList[T]) extends RLi
 
     lengthTailrec(this)
   }
+
+  // reverse the list
+  override def reverse: RList[T] = {
+    /*
+    [1,2,3,4,5].reverse = reverseTailrec([1,2,3,4,5], RNil)
+    = reverseTailrec([2,3,4,5], [1])
+    = reverseTailrec([3,4,5], [2,1])
+    = reverseTailrec([4,5], [3,2,1])
+    = reverseTailrec([5], [4,3,2,1])
+    = reverseTailrec([], [5,4,3,2,1])
+    = [5,4,3,2,1]
+
+    Complexity: O(N)
+    */
+    @tailrec
+    def reverseTailrec(remList: RList[T], accList: RList[T]): RList[T] =
+      if (remList.isEmpty) accList
+      else reverseTailrec(remList.tail, remList.head :: accList)
+
+    reverseTailrec(this, RNil)
+  }
 }
 
 object ListProblems {
@@ -92,5 +119,8 @@ object ListProblems {
 
     // test length
     println(aSmallList.length)
+
+    // test reverse
+    println(aSmallList.reverse)
   }
 }
