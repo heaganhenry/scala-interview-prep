@@ -20,6 +20,9 @@ sealed abstract class RList[+T] {
 
   // append another list
   def ++[S >: T](anotherList: RList[S]): RList[S]
+
+  // remove an element at a given index
+  def removeAt(index: Int): RList[T]
 }
 
 case object RNil extends RList[Nothing] {
@@ -35,10 +38,13 @@ case object RNil extends RList[Nothing] {
   override def length: Int = 0
 
   // reverse the list
-  override def reverse: RList[Nothing] = this
+  override def reverse: RList[Nothing] = RNil
 
   // append another list
   def ++[S >: Nothing](anotherList: RList[S]): RList[S] = anotherList
+
+  // remove an element at a given index
+  def removeAt(index: Int): RList[Nothing] = RNil
 }
 
 case class ::[+T](override val head: T, override val tail: RList[T]) extends RList[T] {
@@ -64,12 +70,12 @@ case class ::[+T](override val head: T, override val tail: RList[T]) extends RLi
     Complexity: O(min(N, index))
     */
     @tailrec
-    def applyTailrec(remList: RList[T], curIndex: Int = 0): T =
+    def applyTailrec(remList: RList[T], curIndex: Int): T =
       if (index == curIndex) remList.head
       else applyTailrec(remList.tail, curIndex + 1)
 
     if (index < 0) throw new NoSuchElementException
-    else applyTailrec(this)
+    else applyTailrec(this, 0)
   }
 
   // get the size of the list
@@ -86,11 +92,11 @@ case class ::[+T](override val head: T, override val tail: RList[T]) extends RLi
     Complexity: O(N)
     */
     @tailrec
-    def lengthTailrec(remList: RList[T], count: Int = 0): Int =
+    def lengthTailrec(remList: RList[T], count: Int): Int =
       if (remList.isEmpty) count
       else lengthTailrec(remList.tail, count + 1)
 
-    lengthTailrec(this)
+    lengthTailrec(this, 0)
   }
 
   // reverse the list
@@ -133,6 +139,28 @@ case class ::[+T](override val head: T, override val tail: RList[T]) extends RLi
 
     concatTailrec(anotherList, this.reverse).reverse
   }
+
+  // remove an element at a given index
+  def removeAt(index: Int): RList[T] = {
+    /*
+    [1,2,3,4,5].removeAt(2) = removeAtTailrec([1,2,3,4,5], RNil, 0)
+    = removeAtTailrec([2,3,4,5], [1], 1)
+    = removeAtTailrec([3,4,5], [2,1], 2)
+    = [2,1].reverse ++ [4,5]
+    = [1,2,4,5]
+
+    Complexity: O(N)
+    */
+    @tailrec
+    def removeAtTailrec(remList: RList[T], accList: RList[T], curIndex: Int): RList[T] = {
+      if (remList.isEmpty) accList.reverse
+      else if (index == curIndex) accList.reverse ++ remList.tail
+      else removeAtTailrec(remList.tail, remList.head :: accList, curIndex + 1)
+    }
+
+    if (index <= 0) this
+    else removeAtTailrec(this, RNil, 0)
+  }
 }
 
 object RList {
@@ -166,5 +194,8 @@ object ListProblems {
 
     // test concat
     println(aSmallList ++ aLargeList)
+
+    // test removeAt
+    println(aLargeList.removeAt(13))
   }
 }
