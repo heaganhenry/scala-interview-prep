@@ -133,9 +133,9 @@ case class ::[+T](override val head: T, override val tail: RList[T]) extends RLi
     length of the other list = M
     */
     @tailrec
-    def concatTailrec(remList: RList[S], accList: RList[S]): RList[S] =
-      if (remList.isEmpty) accList
-      else concatTailrec(remList.tail, remList.head :: accList)
+    def concatTailrec(otherList: RList[S], thisList: RList[S]): RList[S] =
+      if (otherList.isEmpty) thisList
+      else concatTailrec(otherList.tail, otherList.head :: thisList)
 
     concatTailrec(anotherList, this.reverse).reverse
   }
