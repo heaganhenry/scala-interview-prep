@@ -37,6 +37,9 @@ sealed abstract class RList[+T] {
     */
   // run-length encoding
   def rle: RList[(T, Int)]
+
+  // duplicate each element k times
+  def duplicateEach(k: Int): RList[T]
 }
 
 case object RNil extends RList[Nothing] {
@@ -73,6 +76,9 @@ case object RNil extends RList[Nothing] {
     */
   // run-length encoding
   override def rle: RList[(Nothing, Int)] = RNil
+
+  // duplicate each element k times
+  override def duplicateEach(k: Int): RList[Nothing] = RNil
 }
 
 case class ::[+T](override val head: T, override val tail: RList[T]) extends RList[T] {
@@ -279,6 +285,33 @@ case class ::[+T](override val head: T, override val tail: RList[T]) extends RLi
 
     rleTailrec(this.tail, (this.head, 1), RNil).reverse
   }
+
+  // duplicate each element k times
+  override def duplicateEach(k: Int): RList[T] = {
+    /*
+    [1,2].duplicateEach(3) = detr(0, [1,2], [])
+    = detr(1, [1,2], [1])
+    = detr(2, [1,2], [1,1])
+    = detr(3, [1,2], [1,1,1])
+    = detr(0, [2], [1,1,1])
+    = detr(1, [2], [2,1,1,1])
+    = detr(2, [2], [2,2,1,1,1])
+    = detr(3, [2], [2,2,2,1,1,1])
+    = detr(0, [], [2,2,2,1,1,1])
+    = [2,2,2,1,1,1].reverse
+
+    Complexity = O(N * K)
+    */
+    @tailrec
+    def duplicateEachTailrec(i: Int, remaining: RList[T], accumulator: RList[T]): RList[T] = {
+      if (remaining.isEmpty) accumulator.reverse
+      else if (i == k) duplicateEachTailrec(0, remaining.tail, accumulator)
+      else duplicateEachTailrec(i + 1, remaining, remaining.head :: accumulator)
+    }
+
+    if (k < 0) throw new IllegalArgumentException
+    duplicateEachTailrec(0, this, RNil)
+  }
 }
 
 object RList {
@@ -327,9 +360,12 @@ object ListProblems {
       println(aLargeList.filter(x => x % 2 == 0))
     }
 
-    // rle test
     def testMediumProblems() = {
+      // rle test
       println((1 :: 1 :: 1 :: 2 :: 3 :: 3 :: 4 :: 5 :: 5 :: 5 :: RNil).rle)
+
+      // duplicate test
+      println(aSmallList.duplicateEach(4))
     }
 
     testMediumProblems()
