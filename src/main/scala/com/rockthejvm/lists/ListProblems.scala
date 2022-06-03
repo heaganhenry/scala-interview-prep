@@ -9,6 +9,9 @@ sealed abstract class RList[+T] {
   def isEmpty: Boolean
   def ::[S >: T](elem: S): RList[S] = new ::(elem, this)
 
+  /**
+    * Easy problems
+    */
   // get element at kth index
   def apply(index: Int): T
 
@@ -28,6 +31,12 @@ sealed abstract class RList[+T] {
   def map[S](f: T => S): RList[S]
   def flatMap[S](f: T => RList[S]): RList[S]
   def filter(f: T => Boolean): RList[T]
+
+  /**
+    * Medium problems
+    */
+  // run-length encoding
+  def rle: RList[(T, Int)]
 }
 
 case object RNil extends RList[Nothing] {
@@ -36,6 +45,9 @@ case object RNil extends RList[Nothing] {
   override def isEmpty: Boolean = true
   override def toString: String = "[]"
 
+  /**
+    * Easy problems
+    */
   // get element at kth index
   override def apply(index: Int): Nothing = throw new NoSuchElementException
 
@@ -55,6 +67,12 @@ case object RNil extends RList[Nothing] {
   override def map[S](f: Nothing => S): RList[S] = RNil
   override def flatMap[S](f: Nothing => RList[S]): RList[S] = RNil
   override def filter(f: Nothing => Boolean): RList[Nothing] = RNil
+
+  /**
+    * Medium problems
+    */
+  // run-length encoding
+  override def rle: RList[(Nothing, Int)] = RNil
 }
 
 case class ::[+T](override val head: T, override val tail: RList[T]) extends RList[T] {
@@ -69,6 +87,9 @@ case class ::[+T](override val head: T, override val tail: RList[T]) extends RLi
     s"[${toStringTailrec(tail, s"$head")}]"
   }
 
+  /**
+    * Easy problems
+    */
   // get element at kth index
   override def apply(index: Int): T = {
     /*
@@ -231,6 +252,33 @@ case class ::[+T](override val head: T, override val tail: RList[T]) extends RLi
 
     filterTailrec(this, RNil)
   }
+
+  /**
+    * Medium problems
+    */
+  // run-length encoding
+  override def rle: RList[(T, Int)] = {
+    /*
+    [1,1,1,2,2,3,4,4,4,5].rle = rleTailrec([1,1,2,2,3,4,4,4,5], (1,1), [])
+    = rlet([1,2,2,3,4,4,4,5], (1,2), [])
+    = rlet([2,2,3,4,4,4,5], (1,3), [])
+    = rlet([2,3,4,4,4,5], (2, 1), [(1,3)])
+    = rlet([3,4,4,4,5], (2,2), [(1,3)])
+    = rlet([4,4,4,5], (3,1), [(2,2), (1,3)]
+    = ...
+    = [(5,1), (4,3), (3,1), (2,2), (1,3)].reverse
+
+    Complexity: O(N)
+    */
+    @tailrec
+    def rleTailrec(remaining: RList[T], currentTuple: (T, Int), accumulator: RList[(T, Int)]): RList[(T, Int)] = {
+      if (remaining.isEmpty) currentTuple :: accumulator
+      else if (remaining.head == currentTuple._1) rleTailrec(remaining.tail, currentTuple.copy(_2 = currentTuple._2 + 1), accumulator)
+      else rleTailrec(remaining.tail, (remaining.head, 1), currentTuple :: accumulator)
+    }
+
+    rleTailrec(this.tail, (this.head, 1), RNil).reverse
+  }
 }
 
 object RList {
@@ -250,31 +298,40 @@ object ListProblems {
     val aSmallList = 1 :: 2 :: 3 :: RNil // RNil.::(3).::(2).::(1)
     val aLargeList = RList.from(1 to 10000)
 
-    // test get-kth
-    println(aSmallList(0))
-    println(aLargeList(8500))
+    def testEasyProblems() = {
+      // test get-kth
+      println(aSmallList(0))
+      println(aLargeList(8500))
 
-    // test length
-    println(aSmallList.length)
-    println(aLargeList.length)
+      // test length
+      println(aSmallList.length)
+      println(aLargeList.length)
 
-    // test reverse
-    println(aSmallList.reverse)
-    println(aLargeList.reverse)
+      // test reverse
+      println(aSmallList.reverse)
+      println(aLargeList.reverse)
 
-    // test concat
-    println(aSmallList ++ aLargeList)
+      // test concat
+      println(aSmallList ++ aLargeList)
 
-    // test removeAt
-    println(aLargeList.removeAt(13))
+      // test removeAt
+      println(aLargeList.removeAt(13))
 
-    // test map
-    println(aLargeList.map(x => 2 * x))
-    // test flatMap
-    val time = System.currentTimeMillis()
-    aLargeList.flatMap(x => x :: (2 * x) :: RNil)
-    println(System.currentTimeMillis() - time)
-    // test filter
-    println(aLargeList.filter(x => x % 2 == 0))
+      // test map
+      println(aLargeList.map(x => 2 * x))
+      // test flatMap
+      val time = System.currentTimeMillis()
+      aLargeList.flatMap(x => x :: (2 * x) :: RNil)
+      println(System.currentTimeMillis() - time)
+      // test filter
+      println(aLargeList.filter(x => x % 2 == 0))
+    }
+
+    // rle test
+    def testMediumProblems() = {
+      println((1 :: 1 :: 1 :: 2 :: 3 :: 3 :: 4 :: 5 :: 5 :: 5 :: RNil).rle)
+    }
+
+    testMediumProblems()
   }
 }
