@@ -244,11 +244,47 @@ case class ::[+T](override val head: T, override val tail: RList[T]) extends RLi
     Complexity: O(Z^2)
     */
     @tailrec
-    def flatMapTailrec(remaining: RList[T], accumulator: RList[S]): RList[S] =
+    def flatMapTailrec(remaining: RList[T], accumulator: RList[S]): RList[S] = {
       if (remaining.isEmpty) accumulator.reverse
       else flatMapTailrec(remaining.tail, f(remaining.head).reverse ++ accumulator)
+    }
 
-    flatMapTailrec(this, RNil)
+    /*
+    [1,2,3].flatMap(x => [x, 2 * x]) = betterFlatMap([1,2,3], [])
+    = betterFlatMap([2,3], [[2,1]])
+    = betterFlatMap([3], [[4,2], [2,1]])
+    = betterFlatMap([], [[6,3], [4,2], [2,1]])
+    = concatenateAll([[6,3], [4,2], [2,1]], [], [])
+    = concatenateAll([[4,2], [2,1]], [6,3], [])
+    = concatenateAll([[4,2], [2,1]], [3], [6])
+    = concatenateAll([[4,2], [2,1]], [], [3,6])
+    = concatenateAll([[2,1]], [4,2], [3,6])
+    = concatenateAll([[2,1]], [2], [4,3,6])
+    = concatenateAll([[2,1]], [], [2,4,3,6])
+    = concatenateAll([], [2,1], [2,4,3,6])
+    = concatenateAll([], [1], [2,2,4,3,6])
+    = concatenateAll([], [], [1,2,2,4,3,6])
+    = [1,2,2,4,3,6]
+
+    Complexity: O(N + Z)
+    */
+    @tailrec
+    def betterFlatMap(remaining: RList[T], accumulator: RList[RList[S]]): RList[S] = {
+      if (remaining.isEmpty) concatenateAll(accumulator, RNil, RNil)
+      else betterFlatMap(remaining.tail, f(remaining.head).reverse :: accumulator)
+    }
+
+    /*
+    Complexity: O(Z)
+    */
+    @tailrec
+    def concatenateAll(elements: RList[RList[S]], currentList: RList[S], accumulator: RList[S]): RList[S] = {
+      if (elements.isEmpty && currentList.isEmpty) accumulator
+      else if (currentList.isEmpty) concatenateAll(elements.tail, elements.head, accumulator)
+      else concatenateAll(elements, currentList.tail, currentList.head :: accumulator)
+    }
+
+    betterFlatMap(this, RNil)
   }
 
   def filter(f: T => Boolean): RList[T] = {
@@ -434,7 +470,7 @@ object ListProblems {
       println(aLargeList.map(x => 2 * x))
       // test flatMap
       val time = System.currentTimeMillis()
-      aLargeList.flatMap(x => x :: (2 * x) :: RNil)
+      aLargeList.flatMap(x => x :: (2 * x) :: RNil) // first flatMap: 700 ms
       println(System.currentTimeMillis() - time)
       // test filter
       println(aLargeList.filter(x => x % 2 == 0))
@@ -451,7 +487,14 @@ object ListProblems {
         i <- 1 to 20
       } println(oneToTen.rotate(i))
 
+      // sample test
       println(aLargeList.sample(10))
+
+      // better flatMap
+      println(aSmallList.flatMap(x => x :: (2 * x) :: RNil))
+      val time = System.currentTimeMillis()
+      aLargeList.flatMap(x => x :: (2 * x) :: RNil) // better flatMap: 7 ms
+      println(System.currentTimeMillis() - time)
     }
 
     testMediumProblems()
