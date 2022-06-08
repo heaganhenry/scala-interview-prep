@@ -1,6 +1,7 @@
 package com.rockthejvm.lists
 
 import scala.annotation.tailrec
+import scala.util.Random
 
 sealed abstract class RList[+T] {
   // standard functions
@@ -43,6 +44,9 @@ sealed abstract class RList[+T] {
 
   // rotation by k positions to the left
   def rotate(k: Int): RList[T]
+
+  // random sample
+  def sample(k: Int): RList[T]
 }
 
 case object RNil extends RList[Nothing] {
@@ -85,6 +89,9 @@ case object RNil extends RList[Nothing] {
 
   // rotation by k positions to the left
   override def rotate(k: Int): RList[Nothing] = RNil
+
+  // random sample
+  override def sample(k: Int): RList[Nothing] = RNil
 }
 
 case class ::[+T](override val head: T, override val tail: RList[T]) extends RList[T] {
@@ -344,7 +351,7 @@ case class ::[+T](override val head: T, override val tail: RList[T]) extends RLi
     = [2,3,1]
 
     Complexity: O(max(N, K))
-     */
+    */
     @tailrec
     def rotateTailrec(remaining: RList[T], rotationsLeft: Int, buffer: RList[T]): RList[T] = {
       if (remaining.isEmpty && rotationsLeft == 0) this
@@ -354,6 +361,35 @@ case class ::[+T](override val head: T, override val tail: RList[T]) extends RLi
     }
 
     rotateTailrec(this, k, RNil)
+  }
+
+  // random sample
+  def sample(k: Int): RList[T] = {
+    val random = new Random()
+    val maxIndex = this.length
+
+    /*
+    [1,2,3,4,5].sample(3) = str([], 0)
+    = str([2], 1)
+    = str([4,2], 2)
+    = str([4,4,2], 3)
+    = [4,4,2]
+
+    Complexity: O(N * K)
+    */
+    @tailrec
+    def sampleTailrec(accumulator: RList[T], curSamples: Int): RList[T] = {
+      if (curSamples == k) accumulator
+      else sampleTailrec(this(random.nextInt(maxIndex)) :: accumulator, curSamples + 1)
+    }
+
+    /*
+    Complexity: O(N * K)
+    */
+    def sampleElegant = RList.from((1 to k).map(_ => random.nextInt(maxIndex)).map(index => this(index)))
+
+    if (k < 0) RNil
+    else sampleElegant
   }
 }
 
@@ -414,6 +450,8 @@ object ListProblems {
       for {
         i <- 1 to 20
       } println(oneToTen.rotate(i))
+
+      println(aLargeList.sample(10))
     }
 
     testMediumProblems()
