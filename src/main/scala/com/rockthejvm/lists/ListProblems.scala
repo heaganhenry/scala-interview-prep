@@ -40,6 +40,9 @@ sealed abstract class RList[+T] {
 
   // duplicate each element k times
   def duplicateEach(k: Int): RList[T]
+
+  // rotation by k positions to the left
+  def rotate(k: Int): RList[T]
 }
 
 case object RNil extends RList[Nothing] {
@@ -79,6 +82,9 @@ case object RNil extends RList[Nothing] {
 
   // duplicate each element k times
   override def duplicateEach(k: Int): RList[Nothing] = RNil
+
+  // rotation by k positions to the left
+  override def rotate(k: Int): RList[Nothing] = RNil
 }
 
 case class ::[+T](override val head: T, override val tail: RList[T]) extends RList[T] {
@@ -312,6 +318,43 @@ case class ::[+T](override val head: T, override val tail: RList[T]) extends RLi
     if (k < 0) throw new IllegalArgumentException
     duplicateEachTailrec(0, this, RNil)
   }
+
+  // rotation by k positions to the left
+  override def rotate(k: Int): RList[T] = {
+    /*
+    [1,2,3].rotate(3) == [1,2,3]
+    [1,2,3].rotate(6) == [1,2,3]
+    [1,2,3].rotate(4) == [1,2,3].rotate(1)
+
+    [1,2,3].rotate(1) = rotateTailrec([1,2,3], 1, [])
+    = rotateTailrec([2,3], 0, [1])
+    = [2,3,1]
+
+    [1,2,3].rotate(3) = rotateTailrec([1,2,3], 3, [])
+    = rotateTailrec([2,3], 2, [1])
+    = rotateTailrec([3], 1, [2,1])
+    = rotateTailrec([], 0, [3,2,1])
+    = [1,2,3]
+
+    [1,2,3].rotate(4) = rotateTailrec([1,2,3], 4, [])
+    = rotateTailrec([2,3], 3, [1])
+    = rotateTailrec([3], 2, [2,1])
+    = rotateTailrec([], 1, [3,2,1])
+    = rotateTailrec([1,2,3], 1, [])
+    = [2,3,1]
+
+    Complexity: O(max(N, K))
+     */
+    @tailrec
+    def rotateTailrec(remaining: RList[T], rotationsLeft: Int, buffer: RList[T]): RList[T] = {
+      if (remaining.isEmpty && rotationsLeft == 0) this
+      else if (remaining.isEmpty) rotateTailrec(this, rotationsLeft, RNil)
+      else if (rotationsLeft == 0) remaining ++ buffer.reverse
+      else rotateTailrec(remaining.tail, rotationsLeft - 1, remaining.head :: buffer)
+    }
+
+    rotateTailrec(this, k, RNil)
+  }
 }
 
 object RList {
@@ -330,6 +373,7 @@ object ListProblems {
   def main(args: Array[String]): Unit = {
     val aSmallList = 1 :: 2 :: 3 :: RNil // RNil.::(3).::(2).::(1)
     val aLargeList = RList.from(1 to 10000)
+    val oneToTen = RList.from(1 to 10)
 
     def testEasyProblems() = {
       // test get-kth
@@ -366,6 +410,10 @@ object ListProblems {
 
       // duplicate test
       println(aSmallList.duplicateEach(4))
+
+      for {
+        i <- 1 to 20
+      } println(oneToTen.rotate(i))
     }
 
     testMediumProblems()
