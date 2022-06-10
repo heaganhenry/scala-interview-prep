@@ -1,6 +1,7 @@
 package com.rockthejvm.lists
 
 import scala.annotation.tailrec
+import scala.jdk.Accumulator
 import scala.util.Random
 
 sealed abstract class RList[+T] {
@@ -47,6 +48,12 @@ sealed abstract class RList[+T] {
 
   // random sample
   def sample(k: Int): RList[T]
+
+  /**
+    * Hard problems
+    */
+  // insertion sort with order defined by the Ordering object
+  def sorted[S >: T](ordering: Ordering[S]): RList[S]
 }
 
 case object RNil extends RList[Nothing] {
@@ -92,6 +99,12 @@ case object RNil extends RList[Nothing] {
 
   // random sample
   override def sample(k: Int): RList[Nothing] = RNil
+
+  /**
+    * Hard problems
+    */
+  // insertion sort with order defined by the Ordering object
+  override def sorted[S >: Nothing](ordering: Ordering[S]): RList[S] = RNil
 }
 
 case class ::[+T](override val head: T, override val tail: RList[T]) extends RList[T] {
@@ -427,6 +440,47 @@ case class ::[+T](override val head: T, override val tail: RList[T]) extends RLi
     if (k < 0) RNil
     else sampleElegant
   }
+
+  /**
+    * Hard problems
+    */
+  // insertion sort with order defined by the Ordering object
+  def sorted[S >: T](ordering: Ordering[S]): RList[S] = {
+    /*
+    insertSorted(4, [], [1,2,3,5])
+    = insertSorted(4, [1], [2,3,5])
+    = insertSorted(4, [2,1], [3,5])
+    = insertSorted(4, [3,2,1], [5])
+    = [3,2,1].reverse + (4 :: [5])
+    = [1,2,3,4,5]
+
+    Complexity: O(N)
+    */
+    @tailrec
+    def insertSorted(element: S, remaining: RList[S], predecessors: RList[S]): RList[S] = {
+      if (remaining.isEmpty || ordering.lteq(element, remaining.head)) predecessors.reverse ++ (element :: remaining)
+      else insertSorted(element, remaining.tail, remaining.head :: predecessors)
+    }
+
+    /*
+    [3,1,4,2,5].sorted = insertSortTailrec([3,1,4,2,5], [])
+    = insertSortTailrec([1,4,2,5], [3])
+    = insertSortTailrec([4,2,5], [1,3])
+    = insertSortTailrec([2,5], [1,3,4])
+    = insertSortTailrec([5], [1,2,3,4])
+    = insertSortTailrec([], [1,2,3,4,5])
+    = [1,2,3,4,5]
+
+    Complexity: O(N^2)
+    */
+    @tailrec
+    def insertSortTailrec(remaining: RList[T], accumulator: RList[S]): RList[S] = {
+      if (remaining.isEmpty) accumulator
+      else insertSortTailrec(remaining.tail, insertSorted(remaining.head, accumulator, RNil))
+    }
+
+    insertSortTailrec(this, RNil)
+  }
 }
 
 object RList {
@@ -483,6 +537,7 @@ object ListProblems {
       // duplicate test
       println(aSmallList.duplicateEach(4))
 
+      // rotate test
       for {
         i <- 1 to 20
       } println(oneToTen.rotate(i))
@@ -497,6 +552,15 @@ object ListProblems {
       println(System.currentTimeMillis() - time)
     }
 
-    testMediumProblems()
+    def testHardProblems() = {
+      val anUnorderedList = 3 :: 1 :: 2 :: 0 :: 8:: 5 :: RNil
+      val ordering = Ordering.fromLessThan[Int](_ < _)
+
+      // insertion sort test
+      println(anUnorderedList.sorted(ordering))
+      println(aLargeList.sample(10).sorted(ordering))
+    }
+
+    testHardProblems()
   }
 }
