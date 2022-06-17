@@ -52,8 +52,8 @@ sealed abstract class RList[+T] {
   /**
     * Hard problems
     */
-  // insertion sort with order defined by the Ordering object
-  def sorted[S >: T](ordering: Ordering[S]): RList[S]
+  // sort the list in the order defined by the Ordering object
+  def insertionSort[S >: T](ordering: Ordering[S]): RList[S]
 }
 
 case object RNil extends RList[Nothing] {
@@ -103,8 +103,8 @@ case object RNil extends RList[Nothing] {
   /**
     * Hard problems
     */
-  // insertion sort with order defined by the Ordering object
-  override def sorted[S >: Nothing](ordering: Ordering[S]): RList[S] = RNil
+  // sort the list in the order defined by the Ordering object
+  override def insertionSort[S >: Nothing](ordering: Ordering[S]): RList[S] = RNil
 }
 
 case class ::[+T](override val head: T, override val tail: RList[T]) extends RList[T] {
@@ -216,7 +216,7 @@ case class ::[+T](override val head: T, override val tail: RList[T]) extends RLi
     */
     @tailrec
     def removeAtTailrec(remaining: RList[T], accumulator: RList[T], curIndex: Int): RList[T] = {
-      if (remaining.isEmpty) accumulator.reverse
+      if (remaining.isEmpty) this
       else if (index == curIndex) accumulator.reverse ++ remaining.tail
       else removeAtTailrec(remaining.tail, remaining.head :: accumulator, curIndex + 1)
     }
@@ -444,8 +444,8 @@ case class ::[+T](override val head: T, override val tail: RList[T]) extends RLi
   /**
     * Hard problems
     */
-  // insertion sort with order defined by the Ordering object
-  def sorted[S >: T](ordering: Ordering[S]): RList[S] = {
+  // sort the list in the order defined by the Ordering object
+  def insertionSort[S >: T](ordering: Ordering[S]): RList[S] = {
     /*
     insertSorted(4, [], [1,2,3,5])
     = insertSorted(4, [1], [2,3,5])
@@ -557,8 +557,8 @@ object ListProblems {
       val ordering = Ordering.fromLessThan[Int](_ < _)
 
       // insertion sort test
-      println(anUnorderedList.sorted(ordering))
-      println(aLargeList.sample(10).sorted(ordering))
+      println(anUnorderedList.insertionSort(ordering))
+      println(aLargeList.sample(10).insertionSort(ordering))
     }
 
     testHardProblems()
