@@ -1,7 +1,6 @@
 package com.rockthejvm.lists
 
 import scala.annotation.tailrec
-import scala.jdk.Accumulator
 import scala.util.Random
 
 sealed abstract class RList[+T] {
@@ -112,9 +111,10 @@ case class ::[+T](override val head: T, override val tail: RList[T]) extends RLi
 
   override def toString: String = {
     @tailrec
-    def toStringTailrec(remaining: RList[T], result: String): String =
-      if (remaining.isEmpty) result
-      else toStringTailrec(remaining.tail, s"$result, ${remaining.head}")
+    def toStringTailrec(remaining: RList[T], accumulator: String): String = {
+      if (remaining.isEmpty) accumulator
+      else toStringTailrec(remaining.tail, s"$accumulator, ${remaining.head}")
+    }
 
     s"[${toStringTailrec(tail, s"$head")}]"
   }
@@ -133,9 +133,10 @@ case class ::[+T](override val head: T, override val tail: RList[T]) extends RLi
     Complexity: O(min(N, index))
     */
     @tailrec
-    def applyTailrec(remaining: RList[T], curIndex: Int): T =
+    def applyTailrec(remaining: RList[T], curIndex: Int): T = {
       if (index == curIndex) remaining.head
       else applyTailrec(remaining.tail, curIndex + 1)
+    }
 
     if (index < 0) throw new NoSuchElementException
     else applyTailrec(this, 0)
@@ -155,9 +156,10 @@ case class ::[+T](override val head: T, override val tail: RList[T]) extends RLi
     Complexity: O(N)
     */
     @tailrec
-    def lengthTailrec(remaining: RList[T], count: Int): Int =
+    def lengthTailrec(remaining: RList[T], count: Int): Int = {
       if (remaining.isEmpty) count
       else lengthTailrec(remaining.tail, count + 1)
+    }
 
     lengthTailrec(this, 0)
   }
@@ -176,9 +178,10 @@ case class ::[+T](override val head: T, override val tail: RList[T]) extends RLi
     Complexity: O(N)
     */
     @tailrec
-    def reverseTailrec(remaining: RList[T], accumulator: RList[T]): RList[T] =
+    def reverseTailrec(remaining: RList[T], accumulator: RList[T]): RList[T] = {
       if (remaining.isEmpty) accumulator
       else reverseTailrec(remaining.tail, remaining.head :: accumulator)
+    }
 
     reverseTailrec(this, RNil)
   }
@@ -196,9 +199,10 @@ case class ::[+T](override val head: T, override val tail: RList[T]) extends RLi
     length of the other list = M
     */
     @tailrec
-    def concatTailrec(otherList: RList[S], thisList: RList[S]): RList[S] =
+    def concatTailrec(otherList: RList[S], thisList: RList[S]): RList[S] = {
       if (otherList.isEmpty) thisList
       else concatTailrec(otherList.tail, otherList.head :: thisList)
+    }
 
     concatTailrec(anotherList, this.reverse).reverse
   }
@@ -238,9 +242,10 @@ case class ::[+T](override val head: T, override val tail: RList[T]) extends RLi
     Complexity: O(N)
     */
     @tailrec
-    def mapTailrec(remaining: RList[T], accumulator: RList[S]): RList[S] =
+    def mapTailrec(remaining: RList[T], accumulator: RList[S]): RList[S] = {
       if (remaining.isEmpty) accumulator.reverse
       else mapTailrec(remaining.tail, f(remaining.head) :: accumulator)
+    }
 
     mapTailrec(this, RNil)
   }
@@ -313,10 +318,11 @@ case class ::[+T](override val head: T, override val tail: RList[T]) extends RLi
     Complexity: O(N)
     */
     @tailrec
-    def filterTailrec(remaining: RList[T], accumulator: RList[T]): RList[T] =
+    def filterTailrec(remaining: RList[T], accumulator: RList[T]): RList[T] = {
       if (remaining.isEmpty) accumulator.reverse
       else if (f(remaining.head)) filterTailrec(remaining.tail, remaining.head :: accumulator)
       else filterTailrec(remaining.tail, accumulator)
+    }
 
     filterTailrec(this, RNil)
   }
