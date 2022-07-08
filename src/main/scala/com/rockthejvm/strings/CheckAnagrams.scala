@@ -1,22 +1,14 @@
 package com.rockthejvm.strings
 
-import scala.annotation.tailrec
+import CountCharacters._
 
 object CheckAnagrams {
   // Given two strings, determine if they contain the same letters
-  def checkAnagrams(s1: String, s2: String): Boolean = {
-    @tailrec
-    def countCharsTailrec(s: String, i: Int, acc: Map[Char, Int]): Map[Char, Int] = {
-      if (i == s.length) acc
-      else countCharsTailrec(s, i + 1, acc + (s.charAt(i) -> (acc(s.charAt(i)) + 1)))
-    }
+  def checkAnagrams(s1: String, s2: String): Boolean =
+    countCharacters(s1.toLowerCase) == countCharacters(s2.toLowerCase)
 
-    val s1CharMap = countCharsTailrec(s1.toLowerCase(), 0, Map().withDefaultValue(0))
-    val s2CharMap = countCharsTailrec(s2.toLowerCase(), 0, Map().withDefaultValue(0))
-    s1CharMap == s2CharMap
-  }
-
-  def checkAnagrams_v2(s1: String, s2: String): Boolean = s1.sorted equalsIgnoreCase s2.sorted
+  def checkAnagrams_v2(s1: String, s2: String): Boolean =
+    s1.toLowerCase.sorted == s2.toLowerCase.sorted
 
   def main(args: Array[String]): Unit = {
     println(checkAnagrams("Scala", "Haskell")) // false
