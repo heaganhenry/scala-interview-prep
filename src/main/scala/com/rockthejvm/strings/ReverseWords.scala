@@ -8,6 +8,6 @@ object ReverseWords {
 
   def main(args: Array[String]): Unit = {
     println(reverseWords("Alice loves Scala")) // "Scala loves Alive"
-    println(reverseWords("    hello    world    ")) // "world hello"
+    println(reverseWords("  hello   world  ")) // "world hello"
   }
 }
