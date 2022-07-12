@@ -14,6 +14,12 @@ sealed abstract class BTree[+T] {
   def isLeaf: Boolean
   def collectLeaves: List[BTree[T]]
   def leafCount: Int
+
+  /**
+   * Medium problems
+   */
+  // the number of nodes in the tree
+  def size: Int
 }
 
 case object BEnd extends BTree[Nothing] {
@@ -28,6 +34,12 @@ case object BEnd extends BTree[Nothing] {
   override def isLeaf: Boolean = false
   override def collectLeaves: List[BTree[Nothing]] = List()
   override def leafCount: Int = 0
+
+  /**
+   * Medium problems
+   */
+  // the number of nodes in the tree
+  override val size: Int = 0
 }
 
 case class BNode[+T](override val value: T, override val left: BTree[T], override val right: BTree[T]) extends BTree[T] {
@@ -74,6 +86,12 @@ case class BNode[+T](override val value: T, override val left: BTree[T], overrid
   }
 
   override def leafCount: Int = collectLeaves.size
+
+  /**
+   * Medium problems
+   */
+  // the number of nodes in the tree
+  override val size: Int = 1 + left.size + right.size
 }
 
 object TreeProblems {
@@ -91,9 +109,18 @@ object TreeProblems {
     )
   )
   def main(args: Array[String]): Unit = {
-    println(tree.left.isLeaf) // false
-    println(tree.right.isLeaf) // false
-    println(tree.collectLeaves.map(_.value)) // [8,7,5,3]
-    println(tree.leafCount) // 4
+    def testEasyProblems() = {
+      println(tree.left.isLeaf) // false
+      println(tree.right.isLeaf) // false
+      println(tree.collectLeaves.map(_.value)) // [8,7,5,3]
+      println(tree.leafCount) // 4}
+    }
+
+    def testMediumProblems() = {
+      val treeHundredThousand = (1 to 100000).foldLeft[BTree[Int]](BEnd)((tree, node) => BNode(node, tree, BEnd))
+      println(treeHundredThousand.size)
+    }
+
+    testMediumProblems()
   }
 }
