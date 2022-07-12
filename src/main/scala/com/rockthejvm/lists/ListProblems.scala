@@ -351,7 +351,7 @@ case class ::[+T](override val head: T, override val tail: RList[T]) extends RLi
       else rleTailrec(remaining.tail, (remaining.head, 1), currentTuple :: accumulator)
     }
 
-    rleTailrec(this.tail, (this.head, 1), RNil).reverse
+    rleTailrec(tail, (head, 1), RNil).reverse
   }
 
   // duplicate each element k times
