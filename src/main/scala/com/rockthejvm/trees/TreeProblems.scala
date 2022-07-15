@@ -113,7 +113,7 @@ object TreeProblems {
       println(tree.left.isLeaf) // false
       println(tree.right.isLeaf) // false
       println(tree.collectLeaves.map(_.value)) // [8,7,5,3]
-      println(tree.leafCount) // 4}
+      println(tree.leafCount) // 4
     }
 
     def testMediumProblems() = {
