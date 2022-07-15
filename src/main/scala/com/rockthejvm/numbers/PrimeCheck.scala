@@ -21,6 +21,6 @@ object PrimeCheck {
     println(isPrime(2003)) // true
     println(isPrime(2731189)) // true
     println(isPrime(-2003)) // true
-    println(1) // false
+    println(isPrime(1)) // false
   }
 }
