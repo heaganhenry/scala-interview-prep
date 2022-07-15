@@ -463,9 +463,9 @@ case class ::[+T](override val head: T, override val tail: RList[T]) extends RLi
     Complexity: O(N)
     */
     @tailrec
-    def insertSorted(element: S, remaining: RList[S], predecessors: RList[S]): RList[S] = {
-      if (remaining.isEmpty || ordering.lteq(element, remaining.head)) predecessors.reverse ++ (element :: remaining)
-      else insertSorted(element, remaining.tail, remaining.head :: predecessors)
+    def insertSorted(element: T, before: RList[S], after: RList[S]): RList[S] = {
+      if (after.isEmpty || ordering.lteq(element, after.head)) before.reverse ++ (element :: after)
+      else insertSorted(element, after.head :: before, after.tail)
     }
 
     /*
@@ -482,7 +482,7 @@ case class ::[+T](override val head: T, override val tail: RList[T]) extends RLi
     @tailrec
     def insertSortTailrec(remaining: RList[T], accumulator: RList[S]): RList[S] = {
       if (remaining.isEmpty) accumulator
-      else insertSortTailrec(remaining.tail, insertSorted(remaining.head, accumulator, RNil))
+      else insertSortTailrec(remaining.tail, insertSorted(remaining.head, RNil, accumulator))
     }
 
     insertSortTailrec(this, RNil)
@@ -563,7 +563,7 @@ object ListProblems {
       val ordering = Ordering.fromLessThan[Int](_ < _)
 
       // insertion sort test
-      println(anUnorderedList.insertionSort(ordering))
+      println(anUnorderedList.insertionSort(ordering)) // [0,1,2,3,5,8]
       println(aLargeList.sample(10).insertionSort(ordering))
     }
 
