@@ -17,11 +17,11 @@ object GraphProblems {
   /**
    * Easy problems
    */
-  // number of nodes this `node` is associated (adjacent) to
+  // number of nodes this `node` is associated with (adjacent to)
   def outDegree[T](graph: Graph[T], node: T): Int =
     graph.get(node).map(_.size).getOrElse(0)
 
-  // number of nodes connected no `node`
+  // number of nodes connected to `node`
   def inDegree[T](graph: Graph[T], node: T): Int =
     graph.count(_._2.contains(node))
 
